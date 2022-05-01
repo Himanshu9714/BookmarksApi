@@ -14,7 +14,6 @@ def handle_bookmarks():
     if request.method == 'POST':
         body = request.get_json().get("body", "")
         url = request.get_json().get("url", "")
-        print(url)
 
         if not validators.url(url):
             return jsonify({
@@ -89,3 +88,38 @@ def get_bookmark(id):
         "created_at": bookmark.created_at,
         "updated_at": bookmark.updated_at
     })
+
+
+@bookmarks.put("/<int:id>")
+@bookmarks.patch("/<int:id>")
+@jwt_required()
+def edit_bookmark(id):
+    current_user = get_jwt_identity()
+    bookmark = Bookmark.query.filter_by(user_id=current_user, id=id).first()
+
+    if not bookmark:
+        return jsonify({
+            "message": "Item not found!"
+        }), HTTP_404_NOT_FOUND
+
+    body = request.get_json().get("body", "")
+    url = request.get_json().get("url", "")
+
+    if not validators.url(url):
+        return jsonify({
+            "error": "Enter a valid url!"
+        }), HTTP_400_BAD_REQUEST
+
+    bookmark.url = url
+    bookmark.body = body
+    db.session.commit()
+
+    return jsonify({
+        "id": bookmark.id,
+        "url": bookmark.url, 
+        "short_url": bookmark.short_url,
+        "visits": bookmark.visits,
+        "body": bookmark.body,
+        "created_at": bookmark.created_at,
+        "updated_at": bookmark.updated_at
+    }), HTTP_200_OK
