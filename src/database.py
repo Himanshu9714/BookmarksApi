@@ -37,8 +37,8 @@ class Bookmark(db.Model):
         else:
             return picked_chars
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.short_url = self.generate_short_characters()
 
     def __repr__(self) -> str:
